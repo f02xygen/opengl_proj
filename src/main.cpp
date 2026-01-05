@@ -1,16 +1,21 @@
+#include <iostream>
+
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+using namespace glm;
 
 #include "graphics/Shader.h"
+#include "graphics/Texture.h"
 #include "window/Window.h"
 #include "window/Events.h"
-#include "graphics/Texture.h"
+#include "window/Camera.h"
 #include "loaders/png_loading.h"
 
-int WIDTH = 800;
-int HEIGHT = 600;
+int WIDTH = 1280;
+int HEIGHT = 720;
 
 float vertices[]  {
     // x     y     z     u     v
@@ -24,7 +29,7 @@ float vertices[]  {
 };
 
 int main() {
-    Window::initialize(WIDTH, HEIGHT, "Window 2.0");
+    Window::initialize(WIDTH, HEIGHT, "OpenGL Proj");
     Events::initialize();
 
     //std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
@@ -64,21 +69,76 @@ int main() {
     glClearColor(83.0f/255, 69.0f/255, 136.0f/255, 1.0f);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    Camera* camera = new Camera(vec3(0, 0, 1), radians(40.0f));
+
+    mat4 model(1.0f);
+    model = translate(model, vec3(0.5f, 0,0));
+    //model = glm::scale(model, glm::vec3(0.5f,0.5f,0.5f));
+
+    float lastTime = glfwGetTime();
+    float deltaTime = 0.0f;
+
+    float camX = 0.0f;
+    float camY = 0.0f;
     
     while (!Window::isShouldClose()) {
-        Events::pullEvents();
+        float currentTime = glfwGetTime();
+        deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+        
         if (Events::jpressed(GLFW_KEY_ESCAPE)) {
             Window::setShouldClode(true);
+        } 
+        if (Events::jclicked(GLFW_MOUSE_BUTTON_1)) {
+            glClearColor(135.0f/255, 206.0f/255, 235.0f/255, 1.0f);
+        }
+        if (Events::jpressed(GLFW_KEY_TAB)) {
+            Events::toggleCursor();
         }
 
-        if (Events::jclicked(GLFW_MOUSE_BUTTON_1)) {
-            glClearColor(1, 0, 0, 1);
+        float speed = 5.0f;
+        if(Events::pressed(GLFW_KEY_W)) {
+            camera->position += camera->front * speed * deltaTime;
         }
+        if(Events::pressed(GLFW_KEY_S)) {
+            camera->position -= camera->front * speed * deltaTime;
+        }
+        if(Events::pressed(GLFW_KEY_A)) {
+            camera->position -= camera->right * speed * deltaTime;
+        }
+        if(Events::pressed(GLFW_KEY_D)) {
+            camera->position += camera->right * speed * deltaTime;
+        }
+        if(Events::pressed(GLFW_KEY_SPACE)) {
+            camera->position += camera->up * speed * deltaTime;
+        }
+        if(Events::pressed(GLFW_KEY_LEFT_SHIFT)) {
+            camera->position -= camera->up * speed * deltaTime;
+        }
+        
+
+        camY += -Events::deltaY / Window::height;
+        camX += -Events::deltaX / Window::height;
+
+        
+        if (camY < -radians(89.0f)) {
+            camY = -radians(89.0f);
+        }
+        if (camY > radians(89.0f)) {
+            camY = radians(89.0f);
+        }
+
+        camera->rotate(camY, camX, 0);
+        camera->rotation = mat4(1.0f);
+
 
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Draw VAO
         shader->use();
+        shader->uniformMatrix("model", model);
+        shader->uniformMatrix("projview", camera->getProjection() * camera->getView());
         texture->bind();
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -87,6 +147,7 @@ int main() {
         glUseProgram(0);
 
         Window::swapBuffers();
+        Events::pullEvents();
     }
 
     delete shader;

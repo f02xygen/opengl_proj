@@ -6,12 +6,14 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(glm REQUIRED)
 find_package(PNG REQUIRED)
 
 add_executable(Main
 src/main.cpp
 src/window/Window.cpp
 src/window/Events.cpp
+src/window/Camera.cpp
 src/graphics/Shader.cpp
 src/graphics/Texture.cpp
 src/loaders/png_loading.cpp)
