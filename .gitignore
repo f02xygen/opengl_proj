@@ -1,0 +1,12 @@
+/build/
+/.cache/
+
+
+Main
+*.o
+*.out
+
+.vscode/
+
+*.log
+core
