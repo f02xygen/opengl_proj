@@ -14,8 +14,8 @@ using namespace glm;
 #include "window/Camera.h"
 #include "loaders/png_loading.h"
 
-int WIDTH = 1280;
-int HEIGHT = 720;
+int WIDTH = 1920;
+int HEIGHT = 1080;
 
 float vertices[]  {
     // x     y     z     u     v
@@ -70,7 +70,7 @@ int main() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    Camera* camera = new Camera(vec3(0, 0, 1), radians(40.0f));
+    Camera* camera = new Camera(vec3(0, 0, 1), radians(90.0f));
 
     mat4 model(1.0f);
     model = translate(model, vec3(0.5f, 0,0));
@@ -117,10 +117,10 @@ int main() {
             camera->position -= camera->up * speed * deltaTime;
         }
         
-
-        camY += -Events::deltaY / Window::height;
-        camX += -Events::deltaX / Window::height;
-
+        if (Events::_cursor_locked) {
+            camY += -Events::deltaY / Window::height;
+            camX += -Events::deltaX / Window::height;
+        }
         
         if (camY < -radians(89.0f)) {
             camY = -radians(89.0f);
