@@ -9,10 +9,14 @@ using namespace glm;
 
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
+#include "graphics/Mesh.h"
+#include "graphics/VoxelRenderer.h"
 #include "window/Window.h"
 #include "window/Events.h"
 #include "window/Camera.h"
 #include "loaders/png_loading.h"
+#include "voxels/voxel.h"
+#include "voxels/Chunk.h"
 
 int WIDTH = 1920;
 int HEIGHT = 1080;
@@ -26,6 +30,10 @@ float vertices[]  {
     1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
     1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
    -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+};
+
+int attrs[] = {
+    3,2, 0 // null terminator
 };
 
 int main() {
@@ -42,31 +50,21 @@ int main() {
         return 1;
     }
 
-    Texture* texture = load_texture("res/img.png");
+    Texture* texture = load_texture("res/block.png");
     if (texture == nullptr) {
         std::cerr << "failed to load texture" << std::endl;
         delete shader;
         Window::terminate();
-        return 1;
+        return 1 ;
     }
-
-    // Create VAO
-    GLuint VAO, VBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    // position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(0 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-
-    glBindVertexArray(0);
-
+    
+    VoxelRenderer renderer(1024*1024);
+    Chunk* chunk = new Chunk();
+    Mesh* mesh = renderer.render(chunk);
     glClearColor(83.0f/255, 69.0f/255, 136.0f/255, 1.0f);
+    
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -129,22 +127,18 @@ int main() {
             camY = radians(89.0f);
         }
 
-        camera->rotate(camY, camX, 0);
+        camera->rotate(camY, camX, 0); 
         camera->rotation = mat4(1.0f);
 
 
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Draw VAO
         shader->use();
         shader->uniformMatrix("model", model);
         shader->uniformMatrix("projview", camera->getProjection() * camera->getView());
         texture->bind();
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
-
-        glUseProgram(0);
+        mesh->draw(GL_TRIANGLES);
 
         Window::swapBuffers();
         Events::pullEvents();
@@ -152,8 +146,8 @@ int main() {
 
     delete shader;
     delete texture;
-    glDeleteBuffers(1, &VBO);
-    glDeleteVertexArrays(1, &VAO);
+    delete mesh;
+    delete chunk;
 
     Window::terminate();
     return 0;

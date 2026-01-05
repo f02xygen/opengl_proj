@@ -16,7 +16,11 @@ src/window/Events.cpp
 src/window/Camera.cpp
 src/graphics/Shader.cpp
 src/graphics/Texture.cpp
-src/loaders/png_loading.cpp)
+src/graphics/Mesh.cpp
+src/graphics/VoxelRenderer.cpp
+src/loaders/png_loading.cpp
+src/voxels/voxel.cpp
+src/voxels/Chunk.cpp)
 
 target_link_libraries(
     Main
