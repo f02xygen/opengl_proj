@@ -68,7 +68,7 @@ int main() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    Camera* camera = new Camera(vec3(0, 0, 1), radians(90.0f));
+    Camera* camera = new Camera(vec3(10, 10, 10), radians(90.0f));
 
     mat4 model(1.0f);
     model = translate(model, vec3(0.5f, 0,0));
@@ -97,22 +97,22 @@ int main() {
 
         float speed = 5.0f;
         if(Events::pressed(GLFW_KEY_W)) {
-            camera->position += camera->front * speed * deltaTime;
+            camera->position += normalize(vec3(camera->front.x, 0.0f, camera->front.z)) * speed * deltaTime;
         }
         if(Events::pressed(GLFW_KEY_S)) {
-            camera->position -= camera->front * speed * deltaTime;
+            camera->position -= normalize(vec3(camera->front.x, 0.0f, camera->front.z)) * speed * deltaTime;
         }
         if(Events::pressed(GLFW_KEY_A)) {
-            camera->position -= camera->right * speed * deltaTime;
+            camera->position -= normalize(vec3(camera->right.x, 0.0f, camera->right.z)) * speed * deltaTime;
         }
         if(Events::pressed(GLFW_KEY_D)) {
-            camera->position += camera->right * speed * deltaTime;
+            camera->position += normalize(vec3(camera->right.x, 0.0f, camera->right.z)) * speed * deltaTime;
         }
         if(Events::pressed(GLFW_KEY_SPACE)) {
-            camera->position += camera->up * speed * deltaTime;
+            camera->position += normalize(vec3(0.0f, camera->up.y, 0.0f)) * speed * deltaTime;
         }
         if(Events::pressed(GLFW_KEY_LEFT_SHIFT)) {
-            camera->position -= camera->up * speed * deltaTime;
+            camera->position -= normalize(vec3(0.0f, camera->up.y, 0.0f)) * speed * deltaTime;
         }
         
         if (Events::_cursor_locked) {
